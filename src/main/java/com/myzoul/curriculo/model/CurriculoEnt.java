@@ -1,7 +1,9 @@
 package com.myzoul.curriculo.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -10,6 +12,8 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CurriculoEnt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +26,6 @@ public class CurriculoEnt {
     private String telefone;
     private String escolaridade;
     private String funcao;
-    private String status;
 
     @ElementCollection
     @CollectionTable(name = "curriculo_competencia", joinColumns = @JoinColumn(name = "curriculo_id"))

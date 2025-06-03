@@ -3,7 +3,13 @@ package com.myzoul.curriculo.controller;
 import com.myzoul.curriculo.mapper.CurriculoMapper;
 import com.myzoul.curriculo.model.CurriculoEnt;
 import com.myzoul.curriculo.model.dto.CurriculoCreateDto;
+import com.myzoul.curriculo.model.dto.CurriculoUpdateDto;
 import com.myzoul.curriculo.service.CurriculoService;
+import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,14 +24,14 @@ public class CurriculoController {
     }
 
     @PostMapping
-    public CurriculoEnt criar(@RequestBody CurriculoCreateDto dto) {
+    public CurriculoEnt criar(@RequestBody @Valid CurriculoCreateDto dto) {
         CurriculoEnt entidade = CurriculoMapper.toEntity(dto);
         return service.salvar(entidade);
     }
 
     @GetMapping
-    public List<CurriculoEnt> listar() {
-        return service.listarTodos();
+    public Page<CurriculoEnt> listar(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
+        return service.listarTodos(pageable);
     }
 
     @GetMapping("/{id}")
@@ -36,5 +42,10 @@ public class CurriculoController {
     @DeleteMapping("/{id}")
     public void deletar(@PathVariable Long id) {
         service.deletar(id);
+    }
+
+    @PutMapping("/{id}")
+    public CurriculoEnt atualizar(@PathVariable Long id, @RequestBody CurriculoUpdateDto dto) {
+        return service.atualizarParcial(id, dto);
     }
 }

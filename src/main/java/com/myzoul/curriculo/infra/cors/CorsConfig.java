@@ -10,10 +10,7 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins(
-                        "http://localhost:4200",
-                        "http://localhost:8080",
-                        "front-em-producao.com",
-                        "https://api-curriculo-production.up.railway.app" // swagger produção, se aplicável
+                        "https://api-curriculo-production.up.railway.app"
                 )
                 .allowedMethods("*")
                 .allowedHeaders("*")

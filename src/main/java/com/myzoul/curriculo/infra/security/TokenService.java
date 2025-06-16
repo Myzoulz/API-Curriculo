@@ -20,14 +20,13 @@ public class TokenService {
     public String generateToken(UserEnt user){
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
-
-            String token = JWT.create()
+            return JWT.create()
                     .withIssuer("curriculo-api")
                     .withSubject(user.getEmail())
+                    .withClaim("roles", user.getRoles())
                     .withExpiresAt(this.generateExpirationDate())
                     .sign(algorithm);
-            return token;
-        }catch (JWTCreationException exception){
+        } catch (JWTCreationException exception){
             throw new RuntimeException("Erro ao gerar token JWT");
         }
     }

@@ -3,6 +3,9 @@ package com.myzoul.curriculo.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -21,4 +24,8 @@ public class UserEnt {
 
     @Column(nullable = false)
     private String cpf;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> roles = new ArrayList<>();
+
 }

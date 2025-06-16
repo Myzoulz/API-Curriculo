@@ -31,4 +31,6 @@ public class CurriculoEnt {
     @CollectionTable(name = "curriculo_competencia", joinColumns = @JoinColumn(name = "curriculo_id"))
     private List<CompetenciaEmb> competencias;
 
+    @Column(nullable = false)
+    private String status = "Aguardando";
 }

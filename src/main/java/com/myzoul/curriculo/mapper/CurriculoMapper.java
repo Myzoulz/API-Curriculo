@@ -2,7 +2,9 @@ package com.myzoul.curriculo.mapper;
 
 import com.myzoul.curriculo.model.CurriculoEnt;
 import com.myzoul.curriculo.model.CompetenciaEmb;
+import com.myzoul.curriculo.model.dto.CompetenciaDto;
 import com.myzoul.curriculo.model.dto.CurriculoCreateDto;
+import com.myzoul.curriculo.model.dto.CurriculoResponseDto;
 import com.myzoul.curriculo.model.dto.CurriculoUpdateDto;
 
 import java.util.stream.Collectors;
@@ -17,6 +19,7 @@ public class CurriculoMapper {
         entidade.setTelefone(dto.telefone());
         entidade.setEscolaridade(dto.escolaridade());
         entidade.setFuncao(dto.funcao());
+        entidade.setStatus("Aguardando");
         entidade.setCompetencias(
                 dto.competencias().stream().map(c -> {
                     CompetenciaEmb emb = new CompetenciaEmb();
@@ -43,5 +46,22 @@ public class CurriculoMapper {
                             .collect(Collectors.toList())
             );
         }
+    }
+
+    public static CurriculoResponseDto toResponseDto(CurriculoEnt entidade) {
+        return new CurriculoResponseDto(
+                entidade.getId(),
+                entidade.getNome(),
+                entidade.getCpf(),
+                entidade.getDataNascimento(),
+                entidade.getEmail(),
+                entidade.getTelefone(),
+                entidade.getEscolaridade(),
+                entidade.getFuncao(),
+                entidade.getCompetencias().stream()
+                        .map(c -> new CompetenciaDto(c.getDescricao(), c.getNivel()))
+                        .toList(),
+                entidade.getStatus()
+        );
     }
 }

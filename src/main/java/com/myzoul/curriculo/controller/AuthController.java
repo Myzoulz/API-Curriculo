@@ -4,6 +4,7 @@ import com.myzoul.curriculo.model.dto.LoginRequestDto;
 import com.myzoul.curriculo.model.dto.RegisterRequestDto;
 import com.myzoul.curriculo.model.dto.ResponseDto;
 import com.myzoul.curriculo.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseDto> login(@RequestBody LoginRequestDto body) {
+    public ResponseEntity<ResponseDto> login(@RequestBody @Valid LoginRequestDto body) {
         try {
             return ResponseEntity.ok(authService.login(body));
         } catch (RuntimeException e) {
@@ -26,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseDto> register(@RequestBody RegisterRequestDto body) {
+    public ResponseEntity<ResponseDto> register(@RequestBody @Valid RegisterRequestDto body) {
         try {
             return ResponseEntity.ok(authService.register(body));
         } catch (RuntimeException e) {

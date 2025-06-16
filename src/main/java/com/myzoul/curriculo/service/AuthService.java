@@ -6,11 +6,19 @@ import com.myzoul.curriculo.model.dto.RegisterRequestDto;
 import com.myzoul.curriculo.model.dto.ResponseDto;
 import com.myzoul.curriculo.repository.UserRepository;
 import com.myzoul.curriculo.infra.security.TokenService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.myzoul.curriculo.exception.BusinessException;
+import com.myzoul.curriculo.exception.NotFoundException;
+
+import java.util.Collections;
 
 @Service
 public class AuthService {
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
@@ -22,24 +30,35 @@ public class AuthService {
     }
 
     public ResponseDto login(LoginRequestDto body) {
-        UserEnt user = repository.findByEmail(body.email()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        logger.info("Tentativa de login para o email: {}", body.email());
+        UserEnt user = repository.findByEmail(body.email())
+                .orElseThrow(() -> {
+                    logger.warn("Login falhou: usuário não encontrado para {}", body.email());
+                    return new NotFoundException("Credenciais inválidas");
+                });
         if (!passwordEncoder.matches(body.senha(), user.getSenha())) {
-            throw new RuntimeException("Senha inválida");
+            logger.warn("Login falhou: senha inválida para {}", body.email());
+            throw new BusinessException("Credenciais inválidas");
         }
         String token = tokenService.generateToken(user);
+        logger.info("Login bem-sucedido para {}", body.email());
         return new ResponseDto(user.getEmail(), token);
     }
 
     public ResponseDto register(RegisterRequestDto body) {
+        logger.info("Tentativa de registro para o email: {}", body.email());
         if (repository.findByEmail(body.email()).isPresent()) {
-            throw new RuntimeException("E-mail já cadastrado");
+            logger.warn("Registro falhou: e-mail já cadastrado {}", body.email());
+            throw new BusinessException("E-mail já cadastrado");
         }
         UserEnt newUser = new UserEnt();
         newUser.setEmail(body.email());
         newUser.setSenha(passwordEncoder.encode(body.senha()));
-        newUser.setCpf(body.cpf().toString());
+        newUser.setCpf(body.cpf());
+        newUser.setRoles(Collections.singletonList("USER"));
         repository.save(newUser);
         String token = tokenService.generateToken(newUser);
+        logger.info("Registro bem-sucedido para {}", body.email());
         return new ResponseDto(newUser.getEmail(), token);
     }
 }

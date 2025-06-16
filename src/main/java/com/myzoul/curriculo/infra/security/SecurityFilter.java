@@ -1,6 +1,6 @@
 package com.myzoul.curriculo.infra.security;
 
-import com.myzoul.curriculo.infra.security.TokenService;
+import com.auth0.jwt.JWT;
 import com.myzoul.curriculo.model.UserEnt;
 import com.myzoul.curriculo.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -16,6 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
@@ -31,7 +33,13 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if(login != null){
             UserEnt user = userRepository.findByEmail(login).orElseThrow(() -> new RuntimeException("User Not Found"));
-            var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+
+            var decodedJWT = JWT.decode(token);
+            List<String> roles = decodedJWT.getClaim("roles").asList(String.class);
+            var authorities = roles != null
+                    ? roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)).collect(Collectors.toList())
+                    : Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+
             var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

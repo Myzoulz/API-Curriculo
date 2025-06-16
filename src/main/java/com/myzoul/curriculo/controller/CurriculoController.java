@@ -1,18 +1,15 @@
 package com.myzoul.curriculo.controller;
 
 import com.myzoul.curriculo.mapper.CurriculoMapper;
-import com.myzoul.curriculo.model.CurriculoEnt;
 import com.myzoul.curriculo.model.dto.CurriculoCreateDto;
+import com.myzoul.curriculo.model.dto.CurriculoResponseDto;
+import com.myzoul.curriculo.model.dto.CurriculoStatusDto;
 import com.myzoul.curriculo.model.dto.CurriculoUpdateDto;
 import com.myzoul.curriculo.service.CurriculoService;
 import jakarta.validation.Valid;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/curriculos")
@@ -24,28 +21,40 @@ public class CurriculoController {
     }
 
     @PostMapping
-    public CurriculoEnt criar(@RequestBody @Valid CurriculoCreateDto dto) {
-        CurriculoEnt entidade = CurriculoMapper.toEntity(dto);
-        return service.salvar(entidade);
-    }
-
-    @GetMapping
-    public Page<CurriculoEnt> listar(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
-        return service.listarTodos(pageable);
+    public CurriculoResponseDto criar(@RequestBody @Valid CurriculoCreateDto dto, Authentication authentication) {
+        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
+        var entidade = CurriculoMapper.toEntity(dto);
+        entidade.setCpf(user.getCpf());
+        return CurriculoMapper.toResponseDto(service.salvar(entidade));
     }
 
     @GetMapping("/{id}")
-    public CurriculoEnt buscarPorId(@PathVariable Long id) {
-        return service.buscarPorId(id).orElseThrow();
-    }
-
-    @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) {
-        service.deletar(id);
+    public CurriculoResponseDto buscarPorId(@PathVariable Long id, Authentication authentication) {
+        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
+        var entidade = service.buscarPorIdUsuario(id, user.getCpf());
+        return CurriculoMapper.toResponseDto(entidade);
     }
 
     @PutMapping("/{id}")
-    public CurriculoEnt atualizar(@PathVariable Long id, @RequestBody CurriculoUpdateDto dto) {
-        return service.atualizarParcial(id, dto);
+    public CurriculoResponseDto atualizar(@PathVariable Long id, @RequestBody CurriculoUpdateDto dto, Authentication authentication) {
+        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
+        var entidade = service.atualizarParcial(id, dto, user.getCpf());
+        return CurriculoMapper.toResponseDto(entidade);
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<CurriculoStatusDto> getStatusCurriculo(Authentication authentication) {
+        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
+        CurriculoStatusDto statusDto = service.buscarStatusPorCpf(user.getCpf());
+        return ResponseEntity.ok(statusDto);
+    }
+
+    @GetMapping("/meu")
+    public ResponseEntity<CurriculoResponseDto> listarDoUsuario(Authentication authentication) {
+        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
+        return service.buscarCurriculoPorCpf(user.getCpf())
+                .map(CurriculoMapper::toResponseDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

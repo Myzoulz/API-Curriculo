@@ -46,7 +46,7 @@ public class CurriculoService {
     public CurriculoStatusDto buscarStatusPorCpf(String cpf) {
         return repository.findByCpf(cpf)
                 .map(c -> new CurriculoStatusDto(c.getStatus()))
-                .orElse(new CurriculoStatusDto(null));
+                .orElse(new CurriculoStatusDto("Sem currículo"));
     }
 
     public Optional<CurriculoEnt> buscarCurriculoPorCpf(String cpf) {

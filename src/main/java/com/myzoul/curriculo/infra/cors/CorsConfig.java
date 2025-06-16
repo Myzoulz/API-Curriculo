@@ -10,7 +10,7 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins(
-                        "https://curriculo-angular.vercel.app/",
+                        "https://curriculo-angular.vercel.app",
                         "https://api-curriculo-production.up.railway.app"
                 )
                 .allowedMethods("*")

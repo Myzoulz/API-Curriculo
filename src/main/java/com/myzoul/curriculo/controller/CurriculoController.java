@@ -7,6 +7,7 @@ import com.myzoul.curriculo.model.dto.CurriculoResponseDto;
 import com.myzoul.curriculo.model.dto.CurriculoStatusDto;
 import com.myzoul.curriculo.model.dto.CurriculoUpdateDto;
 import com.myzoul.curriculo.service.CurriculoService;
+import com.myzoul.curriculo.util.ResponseUtils;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,8 +43,6 @@ public class CurriculoController {
 
     @GetMapping("/meu")
     public ResponseEntity<CurriculoResponseDto> listarDoUsuario(@CurrentUser UserEnt user) {
-        return service.buscarCurriculoResponsePorCpf(user.getCpf())
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseUtils.of(service.buscarCurriculoResponsePorCpf(user.getCpf()));
     }
 }

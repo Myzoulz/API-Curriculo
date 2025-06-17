@@ -4,6 +4,7 @@ import com.myzoul.curriculo.mapper.CurriculoMapper;
 import com.myzoul.curriculo.model.dto.ContagemDto;
 import com.myzoul.curriculo.model.dto.CurriculoResponseDto;
 import com.myzoul.curriculo.service.CurriculoService;
+import com.myzoul.curriculo.service.AdminReportService;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin/relatorios")
 public class AdminReportController {
     private final CurriculoService service;
+    private final AdminReportService adminReportService;
 
-    public AdminReportController(CurriculoService service) {
+    public AdminReportController(CurriculoService service, AdminReportService adminReportService) {
         this.service = service;
+        this.adminReportService = adminReportService;
     }
 
     @GetMapping("/escolaridade")
@@ -37,13 +40,11 @@ public class AdminReportController {
 
     @PutMapping("/candidatos/{id}/aprovar")
     public ResponseEntity<CurriculoResponseDto> aprovar(@PathVariable Long id) {
-        var atualizado = service.atualizarStatus(id, "Aprovado");
-        return ResponseEntity.ok(CurriculoMapper.toResponseDto(atualizado));
+        return ResponseEntity.ok(adminReportService.atualizarStatus(id, "Aprovado"));
     }
 
     @PutMapping("/candidatos/{id}/reprovar")
     public ResponseEntity<CurriculoResponseDto> reprovar(@PathVariable Long id) {
-        var atualizado = service.atualizarStatus(id, "Reprovado");
-        return ResponseEntity.ok(CurriculoMapper.toResponseDto(atualizado));
+        return ResponseEntity.ok(adminReportService.atualizarStatus(id, "Reprovado"));
     }
 }

@@ -1,6 +1,7 @@
 package com.myzoul.curriculo.controller;
 
-import com.myzoul.curriculo.mapper.CurriculoMapper;
+import com.myzoul.curriculo.infra.security.CurrentUser;
+import com.myzoul.curriculo.model.UserEnt;
 import com.myzoul.curriculo.model.dto.CurriculoCreateDto;
 import com.myzoul.curriculo.model.dto.CurriculoResponseDto;
 import com.myzoul.curriculo.model.dto.CurriculoStatusDto;
@@ -9,7 +10,6 @@ import com.myzoul.curriculo.service.CurriculoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/curriculos")
@@ -21,39 +21,28 @@ public class CurriculoController {
     }
 
     @PostMapping
-    public CurriculoResponseDto criar(@RequestBody @Valid CurriculoCreateDto dto, Authentication authentication) {
-        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
-        var entidade = CurriculoMapper.toEntity(dto);
-        entidade.setCpf(user.getCpf());
-        return CurriculoMapper.toResponseDto(service.salvar(entidade));
+    public ResponseEntity<CurriculoResponseDto> criar(@RequestBody @Valid CurriculoCreateDto dto, @CurrentUser UserEnt user) {
+        return ResponseEntity.ok(service.criarCurriculoResponse(dto, user));
     }
 
     @GetMapping("/{id}")
-    public CurriculoResponseDto buscarPorId(@PathVariable Long id, Authentication authentication) {
-        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
-        var entidade = service.buscarPorIdUsuario(id, user.getCpf());
-        return CurriculoMapper.toResponseDto(entidade);
+    public ResponseEntity<CurriculoResponseDto> buscarPorId(@PathVariable Long id, @CurrentUser UserEnt user) {
+        return ResponseEntity.ok(service.buscarCurriculoResponsePorIdUsuario(id, user.getCpf()));
     }
 
     @PutMapping("/{id}")
-    public CurriculoResponseDto atualizar(@PathVariable Long id, @RequestBody CurriculoUpdateDto dto, Authentication authentication) {
-        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
-        var entidade = service.atualizarParcial(id, dto, user.getCpf());
-        return CurriculoMapper.toResponseDto(entidade);
+    public ResponseEntity<CurriculoResponseDto> atualizar(@PathVariable Long id, @RequestBody CurriculoUpdateDto dto, @CurrentUser UserEnt user) {
+        return ResponseEntity.ok(service.atualizarCurriculoResponseParcial(id, dto, user.getCpf()));
     }
 
     @GetMapping("/status")
-    public ResponseEntity<CurriculoStatusDto> getStatusCurriculo(Authentication authentication) {
-        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
-        CurriculoStatusDto statusDto = service.buscarStatusPorCpf(user.getCpf());
-        return ResponseEntity.ok(statusDto);
+    public ResponseEntity<CurriculoStatusDto> getStatusCurriculo(@CurrentUser UserEnt user) {
+        return ResponseEntity.ok(service.buscarStatusPorCpf(user.getCpf()));
     }
 
     @GetMapping("/meu")
-    public ResponseEntity<CurriculoResponseDto> listarDoUsuario(Authentication authentication) {
-        var user = (com.myzoul.curriculo.model.UserEnt) authentication.getPrincipal();
-        return service.buscarCurriculoPorCpf(user.getCpf())
-                .map(CurriculoMapper::toResponseDto)
+    public ResponseEntity<CurriculoResponseDto> listarDoUsuario(@CurrentUser UserEnt user) {
+        return service.buscarCurriculoResponsePorCpf(user.getCpf())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

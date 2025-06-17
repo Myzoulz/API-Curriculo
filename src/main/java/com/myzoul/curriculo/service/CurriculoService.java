@@ -4,6 +4,9 @@ import com.myzoul.curriculo.exception.BusinessException;
 import com.myzoul.curriculo.exception.NotFoundException;
 import com.myzoul.curriculo.mapper.CurriculoMapper;
 import com.myzoul.curriculo.model.CurriculoEnt;
+import com.myzoul.curriculo.model.UserEnt;
+import com.myzoul.curriculo.model.dto.CurriculoCreateDto;
+import com.myzoul.curriculo.model.dto.CurriculoResponseDto;
 import com.myzoul.curriculo.model.dto.CurriculoStatusDto;
 import com.myzoul.curriculo.model.dto.CurriculoUpdateDto;
 import com.myzoul.curriculo.repository.CurriculoRepository;
@@ -104,5 +107,27 @@ public class CurriculoService {
                 .orElseThrow(() -> new NotFoundException("Currículo não encontrado"));
         PermissaoUtils.checarPermissaoCpf(curriculo, cpfUsuario, "Acesso negado ao currículo de outro usuário");
         return curriculo;
+    }
+
+    public CurriculoEnt criarCurriculo(CurriculoCreateDto dto, UserEnt user) {
+        CurriculoEnt entidade = CurriculoMapper.toEntity(dto);
+        entidade.setCpf(user.getCpf());
+        return salvar(entidade);
+    }
+
+    public CurriculoResponseDto criarCurriculoResponse(CurriculoCreateDto dto, UserEnt user) {
+        return CurriculoMapper.toResponseDto(criarCurriculo(dto, user));
+    }
+
+    public CurriculoResponseDto buscarCurriculoResponsePorIdUsuario(Long id, String cpfUsuario) {
+        return CurriculoMapper.toResponseDto(buscarPorIdUsuario(id, cpfUsuario));
+    }
+
+    public CurriculoResponseDto atualizarCurriculoResponseParcial(Long id, CurriculoUpdateDto dto, String cpfUsuario) {
+        return CurriculoMapper.toResponseDto(atualizarParcial(id, dto, cpfUsuario));
+    }
+
+    public Optional<CurriculoResponseDto> buscarCurriculoResponsePorCpf(String cpf) {
+        return buscarCurriculoPorCpf(cpf).map(CurriculoMapper::toResponseDto);
     }
 }
